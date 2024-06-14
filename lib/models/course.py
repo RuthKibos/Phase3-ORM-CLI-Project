@@ -82,8 +82,8 @@ class Course:
         self.id = CURSOR.lastrowid
         type(self).all[self.id] = self
 
+#Update the table row corresponding to the current Course instance.
     def update(self):
-        """Update the table row corresponding to the current Course instance."""
         sql = """
             UPDATE courses
             SET name = ?, department = ?, credits = ?
@@ -92,10 +92,9 @@ class Course:
         CURSOR.execute(sql, (self.name, self.department, self.credits, self.id))
         CONN.commit()
 
+    #Delete the table row corresponding to the current Course instance
+    # delete the dictionary entry, and reassign id attribute
     def delete(self):
-        """Delete the table row corresponding to the current Course instance,
-        delete the dictionary entry, and reassign id attribute"""
-
         sql = """
             DELETE FROM courses
             WHERE id = ?
@@ -111,7 +110,7 @@ class Course:
 
     @classmethod
     def create(cls, name, department, credits):
-        """ Initialize a new Course instance and save the object to the database """
+        #Initialize a new Course instance and save the object to the database
         course = cls(name, department, credits)
         course.save()
         return course
@@ -136,17 +135,17 @@ class Course:
 
     @classmethod
     def get_all(cls):
-        """Return a list containing one Course object per table row"""
+   #Return a list containing one Course object per table row
         sql = """
             SELECT *
             FROM courses
         """
         rows = CURSOR.execute(sql).fetchall()
         return [cls.instance_from_db(row) for row in rows]
-
+    
+    #Return Course object corresponding to the table row matching the specified primary key"""
     @classmethod
     def find_by_id(cls, id):
-        """Return Course object corresponding to the table row matching the specified primary key"""
         sql = """
             SELECT *
             FROM courses
@@ -154,10 +153,10 @@ class Course:
         """
         row = CURSOR.execute(sql, (id,)).fetchone()
         return cls.instance_from_db(row) if row else None
-
+    
+    #Return Course object corresponding to the first table row matching the specified name
     @classmethod
     def find_by_name(cls, name):
-        """Return Course object corresponding to the first table row matching the specified name"""
         sql = """
             SELECT *
             FROM courses
@@ -165,14 +164,3 @@ class Course:
         """
         row = CURSOR.execute(sql, (name,)).fetchone()
         return cls.instance_from_db(row) if row else None
-
-    def students(self):
-        """Return list of students associated with the current course"""
-        from models.student import Student
-        sql = """
-            SELECT students.* FROM students
-            JOIN enrollments ON students.id = enrollments.student_id
-            WHERE enrollments.course_id = ?
-        """
-        rows = CURSOR.execute(sql, (self.id,)).fetchall()
-        return [Student.instance_from_db(row) for row in rows]
